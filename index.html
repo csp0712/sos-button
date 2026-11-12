@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#111418">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SOS">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<title>SOS 버튼</title>
+<style>
+:root{--bg:#111418;--card:#1b2027;--line:#2c333d;--ink:#f3f5f7;--mute:#9aa4b1;--red:#d7263d;--red2:#9c1528;--ok:#2fbf71;--amb:#f2a900;--blue:#6aa5ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.45;touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{padding:calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 18px) calc(env(safe-area-inset-left) + 14px)}
+button,a,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.wrap{max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;gap:8px;padding:6px 0 10px}
+header .ttl{font-weight:800;font-size:18px;flex:1}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700}
+.pill.practice{border-color:var(--amb);color:var(--amb)}
+.pill.real{border-color:var(--red);background:var(--red);color:#fff}
+.ic{border:1px solid var(--line);background:var(--card);border-radius:10px;width:40px;height:40px;font-size:18px}
+.hint{background:#2a2410;border:1px solid #6b5a12;color:#ffe8a3;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:10px}
+.sos{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:min(72vw,300px);height:min(72vw,300px);margin:14px auto 8px;border-radius:50%;border:8px solid #ffffff22;background:radial-gradient(circle at 35% 30%,#ff5a6e,var(--red) 55%,var(--red2));color:#fff;box-shadow:0 10px 40px #d7263d55}
+.sos:active{transform:scale(.97)}
+.sos .big{font-size:64px;font-weight:900;letter-spacing:.04em;line-height:1}
+.sos .sm{font-size:13.5px;font-weight:600;opacity:.95;padding:0 26px;text-align:center}
+.modeline{text-align:center;font-size:13.5px;color:var(--mute);margin:2px 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+.chip{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--mute)}
+.chip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:#5b6470}
+.chip.ok i{background:var(--ok)} .chip.err i{background:var(--red)} .chip.wait i{background:var(--amb)}
+.btn{display:block;width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px;font-weight:700;text-align:center;text-decoration:none}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#06142e}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.small{display:inline-block;width:auto;padding:8px 12px;font-size:14px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.row2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+h2{font-size:13px;color:var(--mute);letter-spacing:.05em;margin:18px 0 8px}
+.list{display:grid;gap:6px}
+.ct{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-decoration:none}
+.ct b{font-size:15.5px}
+.ct span{grid-column:1;font-size:12.5px;color:var(--mute)}
+.ct em{grid-row:1 / span 2;grid-column:2;font-style:normal;font-size:20px}
+.empty{color:var(--mute);font-size:13.5px;text-align:center;padding:10px}
+/* countdown */
+.overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:20;background:#7d0f1ff2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.overlay .num{font-size:120px;font-weight:900;line-height:1}
+.overlay .what{font-size:17px;font-weight:700}
+.overlay .cancel{margin-top:18px;width:min(86vw,420px);padding:22px;border-radius:16px;border:3px solid #fff;background:#fff;color:#7d0f1f;font-size:24px;font-weight:900}
+/* active */
+#active{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10;background:#2a0b10;overflow:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 18px)}
+#active .in{max-width:520px;margin:0 auto}
+.ahead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ahead .atitle{flex:1;font-weight:900;font-size:20px}
+.ahead .atime{font-variant-numeric:tabular-nums;font-size:20px;font-weight:800}
+.call{display:block;text-align:center;text-decoration:none;background:#fff;color:#a3162a;border-radius:18px;padding:22px 12px;font-size:28px;font-weight:900;box-shadow:0 8px 30px #0008}
+.call.practice{background:#3a2a10;color:#ffe8a3;border:2px dashed #f2a900;font-size:20px}
+.note{font-size:13px;color:#ffd7dc;text-align:center;margin:8px 0 12px}
+.st{display:grid;grid-template-columns:12px 86px 1fr;gap:8px;align-items:start;background:#00000040;border:1px solid #ffffff22;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14.5px}
+.st i{width:10px;height:10px;border-radius:50%;margin-top:6px;background:#5b6470}
+.st.on i{background:var(--ok)} .st.wait i,.st.mute i{background:var(--amb)} .st.err i{background:var(--red)}
+.st b{font-weight:800}
+.st span{word-break:break-word}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.row3 .btn{padding:12px 6px;font-size:14.5px;background:#00000040;border-color:#ffffff33}
+.end{position:relative;overflow:hidden;display:block;width:100%;margin-top:18px;padding:16px;border-radius:14px;border:1px solid #ffffff55;background:#00000055;color:#fff;font-weight:800;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.end i{position:absolute;left:0;top:0;bottom:0;width:0;background:#ffffff33}
+.end.hold i{width:100%;transition:width 1.5s linear}
+.end span{position:relative}
+/* modal */
+.modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:30;background:#000a;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.mh b{font-size:17px}
+#mBody{overflow:auto;padding:12px 14px calc(env(safe-area-inset-bottom) + 20px)}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+input[type=text],input[type=tel],input[type=number],input[type=password],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:16px}
+textarea{min-height:110px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+.sec{border-top:1px solid var(--line);margin-top:18px;padding-top:6px}
+.sec h3{font-size:15px;margin:10px 0 2px}
+.help{font-size:12.5px;color:var(--mute);margin-top:4px}
+.say{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px}
+.say .en{font-size:19px;font-weight:800;line-height:1.35}
+.say .ko{font-size:13px;color:var(--mute);margin-top:3px}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg3 button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 4px;font-weight:800}
+.seg3 button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#06142e}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:6px 10px;font-size:15px}
+.kv dt{color:var(--mute)} .kv dd{margin:0;font-weight:700;word-break:break-word}
+.evt{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.evt audio{width:100%;margin-top:6px}
+.evt small{color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translateX(-50%);z-index:40;background:#000d;border:1px solid #ffffff33;color:#fff;border-radius:12px;padding:10px 14px;font-size:14.5px;max-width:92vw;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" id="home">
+  <header>
+    <div class="ttl" id="ttl">SOS 버튼</div>
+    <button class="pill" id="modePill"></button>
+    <button class="ic" id="btnSet" aria-label="설정">⚙</button>
+  </header>
+  <div class="hint" id="installHint" hidden></div>
+  <button class="sos" id="sos"><span class="big">SOS</span><span class="sm" id="sosSub"></span></button>
+  <div class="modeline" id="modeLine"></div>
+  <div class="chips" id="chips"></div>
+  <button class="btn" id="btnPrep">준비 점검 — 마이크·위치 미리 허용하기</button>
+  <h2>바로 전화 (급하지 않을 때)</h2>
+  <div class="list" id="contacts"></div>
+  <div class="row">
+    <button class="btn" id="btnScript">911에 말할 문장</button>
+    <button class="btn" id="btnCard">내 정보</button>
+    <button class="btn" id="btnHist">기록</button>
+  </div>
+</div>
+
+<div class="overlay" id="count" hidden>
+  <div class="what" id="cWhat"></div>
+  <div class="num" id="cNum">3</div>
+  <div id="cSub"></div>
+  <button class="cancel" id="cCancel">취소</button>
+</div>
+
+<div id="active" hidden><div class="in">
+  <div class="ahead"><span class="pill" id="aMode"></span><div class="atitle">긴급 진행 중</div><div class="atime" id="aTime">00:00</div></div>
+  <a class="call" id="aDial" href="#"></a>
+  <div class="note" id="aNote"></div>
+  <div class="st" id="stRec"><i></i><b>녹음</b><span></span></div>
+  <div class="st" id="stLoc"><i></i><b>위치</b><span></span></div>
+  <div class="st" id="stTg"><i></i><b>부모님 알림</b><span></span></div>
+  <div class="row3">
+    <button class="btn" id="aScript">말할 문장</button>
+    <a class="btn" id="aMap" target="_blank" rel="noopener" href="#">지도 열기</a>
+    <a class="btn" id="aSms" href="#">문자로 위치</a>
+  </div>
+  <button class="end" id="aEnd"><i></i><span>길게 눌러 끝내기</span></button>
+</div></div>
+
+<div class="modal" id="modal" hidden><div class="sheet">
+  <div class="mh"><b id="mTitle"></b><button class="ic" id="mClose" aria-label="닫기">✕</button></div>
+  <div id="mBody"></div>
+</div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(()=>{'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const telNum=s=>String(s||'').replace(/[^0-9+*#]/g,'');
+
+/* ---------------- 설정 ---------------- */
+const LS='sos.cfg.v1';
+const DEF={mode:'practice',number:'911',countdown:3,practiceDial:'',segSec:20,city:'',
+  owner:{name:'',age:'',phone:'',lang:'Korean',note:''},
+  tg:{token:'',chats:[]},contacts:[],sms:[],places:[]};
+function merge(a,b){for(const k in b){const v=b[k];if(v&&typeof v==='object'&&!Array.isArray(v)){a[k]=merge(a[k]&&typeof a[k]==='object'&&!Array.isArray(a[k])?a[k]:{},v)}else a[k]=v}return a}
+function loadCfg(){const c=clone(DEF);try{merge(c,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}if(c.mode!=='real')c.mode='practice';return c}
+let cfg=loadCfg();
+function saveCfg(){try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){toast('설정을 저장하지 못했습니다')}}
+function exportCfg(){const c=clone(cfg);c.tg.token='';delete c.mode;return JSON.stringify(c,null,1)}
+function importCfg(txt){const o=JSON.parse(txt);if(!o||typeof o!=='object'||Array.isArray(o))throw new Error('형식이 맞지 않습니다');
+  const tok=cfg.tg.token,chats=cfg.tg.chats,mode=cfg.mode;delete o.mode;
+  cfg=merge(clone(DEF),merge(clone(cfg),o));
+  if(!(o.tg&&o.tg.token))cfg.tg.token=tok;
+  if(!(o.tg&&Array.isArray(o.tg.chats)&&o.tg.chats.length))cfg.tg.chats=chats;
+  cfg.mode=mode;saveCfg()}
+
+/* ---------------- 저장소(IndexedDB) ---------------- */
+let dbp=null;
+function db(){if(dbp)return dbp;dbp=new Promise((res,rej)=>{const r=indexedDB.open('sos-db',1);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('events'))d.createObjectStore('events',{keyPath:'id'});
+    if(!d.objectStoreNames.contains('segs')){const s=d.createObjectStore('segs',{keyPath:'key'});s.createIndex('ev','eventId')}};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});return dbp}
+function tx(store,mode,fn){return db().then(d=>new Promise((res,rej)=>{const t=d.transaction(store,mode);const s=t.objectStore(store);let rq;
+  try{rq=fn(s)}catch(e){rej(e);return}
+  t.oncomplete=()=>res(rq?rq.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)}))}
+const idbPut=(st,v)=>tx(st,'readwrite',s=>s.put(v));
+const idbAll=st=>tx(st,'readonly',s=>s.getAll());
+const idbByEv=id=>tx('segs','readonly',s=>s.index('ev').getAll(id));
+const idbDel=(st,k)=>tx(st,'readwrite',s=>s.delete(k));
+async function delEvent(id){try{const a=await idbByEv(id);for(const s of a)await idbDel('segs',s.key);await idbDel('events',id)}catch(e){}}
+
+/* ---------------- 화면 도구 ---------------- */
+let toastT=null,urls=[];
+function toast(m,ms){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},ms||2800)}
+function openModal(title,html){$('#mTitle').textContent=title;$('#mBody').innerHTML=html;$('#modal').hidden=false;$('#mBody').scrollTop=0}
+function closeModal(){$('#modal').hidden=true;$('#mBody').innerHTML='';urls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});urls=[]}
+const pad=n=>String(n).padStart(2,'0');
+const clock=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())};
+const dstr=t=>{const d=new Date(t);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+clock(t)};
+const kst=t=>{try{return new Date(t).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}};
+const mmss=ms=>{const s=Math.max(0,Math.floor(ms/1000));return pad(Math.floor(s/60))+':'+pad(s%60)};
+
+/* ---------------- 상태 ---------------- */
+let phase='idle';           // idle | count | active
+let ev=null;                // 진행 중인 건
+let stream=null,rec=null,recIdx=0,segTimer=null,reviving=false;
+let watchId=null,lastPos=null,live={},lastLiveT=0,lastLivePos=null;
+let cdTimer=null,cdLeft=0,tick=null,wake=null,upBusy=false,holdT=null,lastPump=0;
+let segInfo={saved:0,sent:0};
+const dropped=new Set();    // 취소한 건: 녹음을 저장하지도 보내지도 않는다
+const S={rec:['off',''],loc:['off',''],tg:['off','']};
+const setS=(k,s,m)=>{S[k]=[s,m||''];renderActive()};
+const isReal=()=>(ev?ev.mode:cfg.mode)==='real';
+const tgReady=()=>!!(cfg.tg.token&&cfg.tg.chats&&cfg.tg.chats.length);
+function log(m){if(ev)ev.log.push({t:Date.now(),m:String(m)})}
+function saveEv(){if(!ev)return;const e=clone({id:ev.id,t0:ev.t0,t1:ev.t1||null,mode:ev.mode,pos:ev.pos||null,alertOk:ev.alertOk||0,log:ev.log.slice(-200)});idbPut('events',e).catch(()=>{})}
+
+/* ---------------- 위치 ---------------- */
+function dist(a,b){const R=6371000,r=x=>x*Math.PI/180;const dLa=r(b.lat-a.lat),dLo=r(b.lon-a.lon);
+  const s=Math.sin(dLa/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(s))}
+function nearPlace(p){if(!p)return null;let best=null;for(const pl of cfg.places||[]){if(typeof pl.lat!=='number'||typeof pl.lon!=='number')continue;const d=dist(p,pl);if(!best||d<best.d)best={pl,d}}return best}
+function placeText(p){const n=nearPlace(p);if(!n)return '';const r=n.pl.r||150;
+  if(n.d<=r)return n.pl.name+' 근처(약 '+Math.max(5,Math.round(n.d/5)*5)+'m)';
+  if(n.d<=3000)return n.pl.name+'에서 약 '+(n.d<1000?Math.round(n.d/10)*10+'m':(n.d/1000).toFixed(1)+'km');return ''}
+function placeAddr(p){const n=nearPlace(p);return n&&n.d<=(n.pl.r||150)?(n.pl.addr||''):''}
+const mapUrl=p=>'https://maps.google.com/?q='+p.lat.toFixed(6)+','+p.lon.toFixed(6);
+function startLoc(){if(!navigator.geolocation){setS('loc','err','이 기기에서는 위치를 쓸 수 없습니다');return}
+  setS('loc','wait','위치 확인 중');
+  const ok=p=>onPos(p),er=e=>{if(!lastPos)setS('loc','err',e&&e.code===1?'위치가 허용되지 않았습니다':'위치를 아직 못 잡았습니다')};
+  try{navigator.geolocation.getCurrentPosition(ok,er,{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+    watchId=navigator.geolocation.watchPosition(ok,er,{enableHighAccuracy:true,maximumAge:5000,timeout:30000})}
+  catch(e){setS('loc','err','위치를 쓸 수 없습니다')}}
+function stopLoc(){try{if(watchId!==null)navigator.geolocation.clearWatch(watchId)}catch(e){}watchId=null}
+function onPos(p){if(phase==='idle'||!ev)return;const c=p.coords;
+  lastPos={lat:c.latitude,lon:c.longitude,acc:Math.round(c.accuracy||0),t:Date.now()};ev.pos=lastPos;setS('loc','on');
+  if(phase==='active')pushLoc()}
+const hacc=()=>Math.min(1500,Math.max(1,lastPos.acc||1));
+async function pushLoc(){if(!tgReady()||!lastPos||!ev||!ev.alerted)return;const now=Date.now();
+  if(!ev.fixSent){ev.fixSent=true;lastLiveT=now;lastLivePos=lastPos;
+    if(!ev.alertHadPos)tgAll('sendMessage',id=>({chat_id:id,text:locText(),disable_web_page_preview:true}));
+    const rs=await tgAll('sendLocation',id=>({chat_id:id,latitude:lastPos.lat,longitude:lastPos.lon,horizontal_accuracy:hacc(),live_period:3600}));
+    rs.forEach(r=>{if(r.res&&r.res.message_id)live[r.chat]=r.res.message_id});return}
+  if(now-lastLiveT<12000)return;
+  if(lastLivePos&&dist(lastPos,lastLivePos)<8&&now-lastLiveT<60000)return;
+  lastLiveT=now;lastLivePos=lastPos;
+  for(const c of cfg.tg.chats){if(live[c.id])tgCall('editMessageLiveLocation',{chat_id:c.id,message_id:live[c.id],latitude:lastPos.lat,longitude:lastPos.lon,horizontal_accuracy:hacc()}).catch(()=>{})}}
+
+/* ---------------- 텔레그램(부모님 알림) ---------------- */
+async function tgCall(method,params,opt){const url='https://api.telegram.org/bot'+cfg.tg.token+'/'+method;let body;
+  if(params instanceof FormData)body=params;else{body=new URLSearchParams();for(const k in params)if(params[k]!==undefined&&params[k]!==null)body.append(k,String(params[k]))}
+  const r=await fetch(url,Object.assign({method:'POST',body},opt||{}));let j=null;try{j=await r.json()}catch(e){}
+  if(!j||!j.ok)throw new Error((j&&j.description)||('HTTP '+r.status));return j.result}
+async function tgAll(method,mk,opt){const out=[];for(const c of cfg.tg.chats){try{out.push({chat:c.id,res:await tgCall(method,mk(c.id),opt)})}catch(e){out.push({chat:c.id,err:e})}}return out}
+const tagTxt=()=>isReal()?'':'[연습] ';
+const whoTxt=()=>cfg.owner.name||'SOS';
+function posLine(){if(!lastPos)return '위치: 확인 중 (잡히는 대로 보냅니다)';const pt=placeText(lastPos),ad=placeAddr(lastPos);
+  return '위치: '+lastPos.lat.toFixed(5)+', '+lastPos.lon.toFixed(5)+' (오차 약 '+lastPos.acc+'m)'+(pt?'\n'+pt:'')+(ad?'\n주소: '+ad:'')+'\n지도: '+mapUrl(lastPos)}
+function alertText(){const real=isReal();return '🚨 '+tagTxt()+whoTxt()+' 긴급 버튼\n시각: '+dstr(ev.t0)+' (한국 '+kst(ev.t0)+')\n'+
+  (real?cfg.number+' 전화 화면을 열었습니다.':'연습입니다. 전화는 걸지 않았습니다.')+'\n'+posLine()+'\n녹음은 조각으로 이어서 보냅니다.'}
+function locText(){return '📍 '+tagTxt()+whoTxt()+' 위치 확인\n'+posLine()}
+function alertParents(){if(!tgReady()){setS('tg','off','설정되지 않음 — 「문자로 위치」를 쓰세요');return}
+  setS('tg','wait','부모님께 알리는 중');ev.alerted=true;ev.alertHadPos=!!lastPos;ev.alertTry=Date.now();
+  tgAll('sendMessage',id=>({chat_id:id,text:alertText(),disable_web_page_preview:true}),{keepalive:true}).then(rs=>{
+    const ok=rs.filter(r=>!r.err).length;if(!ev)return;ev.alertOk=ok;
+    if(ok)setS('tg','on','알림 전송됨 ('+ok+'명)');else setS('tg','err','알림 전송 실패 — 다시 시도 중');saveEv()});
+  if(lastPos)pushLoc()}
+async function tgSendSeg(s){const ext=/mp4|m4a|aac/.test(s.mime)?'m4a':/ogg/.test(s.mime)?'ogg':'webm';
+  const method=ext==='m4a'?'sendAudio':'sendDocument',field=ext==='m4a'?'audio':'document';
+  const cap=(s.mode==='real'?'':'[연습] ')+'녹음 '+s.idx+' · '+clock(s.t0)+' · '+Math.round(s.dur/1000)+'초';
+  let fileId=null,okAny=false,lastErr=null;
+  for(const c of cfg.tg.chats){try{let res;
+      if(fileId)res=await tgCall(method,{chat_id:c.id,[field]:fileId,caption:cap});
+      else{const fd=new FormData();fd.append('chat_id',c.id);fd.append('caption',cap);fd.append(field,s.blob,'sos-'+s.key+'.'+ext);
+        res=await tgCall(method,fd);const f=res&&(res.audio||res.document||res.voice);fileId=(f&&f.file_id)||null}
+      okAny=true}catch(e){lastErr=e}}
+  if(!okAny)throw lastErr||new Error('send failed')}
+async function pump(){if(upBusy||!tgReady())return;upBusy=true;lastPump=Date.now();
+  try{const all=await idbAll('segs');const todo=all.filter(s=>s.final&&!s.sent&&s.size>0&&!dropped.has(s.eventId)).sort((a,b)=>a.t0-b.t0);
+    for(const s of todo){try{await tgSendSeg(s);s.sent=1;await idbPut('segs',s)}catch(e){log('upload fail: '+(e&&e.message));break}refreshSegInfo()}}
+  catch(e){}finally{upBusy=false;refreshSegInfo()}}
+
+/* ---------------- 녹음 ---------------- */
+/* 텔레그램·아이폰에서 바로 재생되는 형식(AAC)을 먼저 고른다 */
+function pickMime(){if(!window.MediaRecorder)return null;const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  for(const m of ['audio/mp4;codecs=mp4a.40.2',ios?'audio/mp4':'','audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus']){try{if(m&&MediaRecorder.isTypeSupported(m))return m}catch(e){}}return ''}
+const streamLive=()=>!!stream&&stream.getAudioTracks().some(t=>t.readyState==='live');
+function stopStream(){if(stream){stream.getTracks().forEach(t=>{try{t.stop()}catch(e){}});stream=null}}
+async function startRec(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){setS('rec','err','이 기기에서는 녹음을 쓸 수 없습니다');return}
+  setS('rec','wait','마이크 허용을 기다리는 중');let st;
+  try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true}})}
+  catch(e){log('mic error '+(e&&e.name));setS('rec','err',e&&e.name==='NotAllowedError'?'마이크가 허용되지 않았습니다':'마이크를 열지 못했습니다');return}
+  if(phase==='idle'){st.getTracks().forEach(t=>{try{t.stop()}catch(e){}});return}
+  stream=st;
+  for(const t of stream.getAudioTracks()){
+    t.addEventListener('ended',()=>{if(phase!=='idle')reviveRec('ended')});
+    t.addEventListener('mute',()=>{if(phase!=='idle')setS('rec','mute','마이크가 잠시 막혔습니다 (통화 중에는 녹음이 비어 있을 수 있음)')});
+    t.addEventListener('unmute',()=>{if(phase!=='idle'&&rec&&rec.state==='recording')setS('rec','on')})}
+  newSeg()}
+function newSeg(){clearTimeout(segTimer);if(phase==='idle'||!stream||!ev)return;
+  const mime=pickMime(),chunks=[],idx=++recIdx,t0=Date.now(),eventId=ev.id,mode=ev.mode,key=eventId+'-'+String(idx).padStart(4,'0');let r;
+  /* 목소리에는 48kbps면 충분하다 — 파일이 작아야 데이터가 느려도 빨리 올라간다 */
+  try{r=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:48000}:{audioBitsPerSecond:48000})}
+  catch(e){try{r=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream)}catch(e2){setS('rec','err','녹음을 시작하지 못했습니다');return}}
+  const put=fin=>{if(dropped.has(eventId)||!chunks.length)return Promise.resolve(false);const blob=new Blob(chunks,{type:r.mimeType||mime||'audio/mp4'});
+    return idbPut('segs',{key,eventId,idx,t0,dur:Date.now()-t0,mime:blob.type,size:blob.size,blob,mode,final:fin?1:0,sent:0}).then(()=>true).catch(()=>false)};
+  r.ondataavailable=e=>{if(e.data&&e.data.size){chunks.push(e.data);if(r.state==='recording')put(false)}};
+  r.onstop=()=>{if(dropped.has(eventId))return;put(true).then(()=>{refreshSegInfo();pump()});if(r===rec&&phase!=='idle'&&streamLive())newSeg()};
+  r.onerror=()=>{log('recorder error')};
+  try{r.start(4000)}catch(e){try{r.start()}catch(e2){setS('rec','err','녹음을 시작하지 못했습니다');return}}
+  rec=r;setS('rec','on');
+  const sec=idx===1?Math.min(8,cfg.segSec||20):(cfg.segSec||20);
+  segTimer=setTimeout(()=>{if(rec===r&&r.state!=='inactive'){try{r.stop()}catch(e){}}},sec*1000)}
+function stopRec(){clearTimeout(segTimer);const r=rec;rec=null;if(r&&r.state!=='inactive'){try{r.stop()}catch(e){}}stopStream()}
+async function reviveRec(why){if(reviving||phase==='idle')return;reviving=true;log('mic revive: '+why);
+  try{stopRec();await new Promise(r=>setTimeout(r,400));
+    if(phase==='idle')return;
+    if(document.visibilityState==='visible')await startRec();else setS('rec','wait','화면으로 돌아오면 녹음을 다시 시작합니다')}
+  finally{reviving=false}}
+async function refreshSegInfo(){if(!ev)return;try{const a=await idbByEv(ev.id);segInfo={saved:a.filter(s=>s.final).length,sent:a.filter(s=>s.sent).length}}catch(e){}renderActive()}
+
+/* ---------------- 화면 켜 두기 ---------------- */
+async function reqWake(){try{if('wakeLock' in navigator&&!wake){wake=await navigator.wakeLock.request('screen');wake.addEventListener('release',()=>{wake=null})}}catch(e){}}
+function relWake(){try{if(wake)wake.release()}catch(e){}wake=null}
+
+/* ---------------- 전화 ---------------- */
+const SOS={openDialer(url){location.href=url}};
+function dialTarget(){return telNum(isReal()?cfg.number:cfg.practiceDial)}
+function dial(auto){const n=dialTarget();if(!n){log('practice: dialer not opened');if(!auto)toast('연습 모드입니다. 전화는 걸지 않습니다.');return false}
+  log('open dialer ('+(isReal()?'real':'practice number')+')');try{SOS.openDialer('tel:'+n)}catch(e){}return true}
+
+/* ---------------- SOS 흐름 ---------------- */
+function onSosTap(){if(phase!=='idle')return;
+  ev={id:'e'+Date.now(),t0:Date.now(),t1:null,mode:cfg.mode,log:[],pos:null,alerted:false,alertOk:0,fixSent:false};
+  phase='count';recIdx=0;lastPos=null;live={};lastLiveT=0;lastLivePos=null;segInfo={saved:0,sent:0};
+  S.rec=['off',''];S.loc=['off',''];S.tg=['off',''];
+  log('button pressed');startRec();startLoc();reqWake();
+  cdLeft=Math.max(0,Math.min(10,Math.round(+cfg.countdown||0)));
+  if(cdLeft<=0){go();return}
+  renderCount();$('#count').hidden=false;
+  cdTimer=setInterval(()=>{cdLeft--;if(cdLeft<=0){clearInterval(cdTimer);cdTimer=null;go()}else renderCount()},1000)}
+function renderCount(){$('#cNum').textContent=cdLeft;const real=ev.mode==='real';
+  $('#cWhat').textContent=real?'곧 부모님께 알리고 '+cfg.number+' 전화 화면을 엽니다':'연습 — 부모님께 [연습] 알림만 보냅니다';
+  $('#cSub').textContent='잘못 눌렀으면 아래 버튼'}
+function cancelCount(){if(phase!=='count')return;clearInterval(cdTimer);cdTimer=null;const id=ev.id;dropped.add(id);phase='idle';
+  stopRec();stopLoc();relWake();ev=null;$('#count').hidden=true;renderHome();toast('취소했습니다. 아무것도 보내지 않았습니다.');
+  setTimeout(()=>delEvent(id),1500)}
+function go(){phase='active';$('#count').hidden=true;$('#aTime').textContent=mmss(Date.now()-ev.t0);$('#active').hidden=false;window.scrollTo(0,0);
+  saveEv();alertParents();setTimeout(()=>{if(phase==='active')dial(true)},250);
+  clearInterval(tick);tick=setInterval(onTick,1000);renderActive()}
+function onTick(){if(phase!=='active'||!ev)return;$('#aTime').textContent=mmss(Date.now()-ev.t0);const now=Date.now();
+  if(tgReady()&&ev.alerted&&!ev.alertOk&&now-(ev.alertTry||0)>10000){ev.alertTry=now;
+    tgAll('sendMessage',id=>({chat_id:id,text:alertText(),disable_web_page_preview:true})).then(rs=>{const ok=rs.filter(r=>!r.err).length;if(!ev)return;if(ok){ev.alertOk=ok;setS('tg','on','알림 전송됨 ('+ok+'명)');saveEv();if(lastPos)pushLoc()}})}
+  if(now-lastPump>15000)pump();
+  if(Math.floor((now-ev.t0)/1000)%20===0)saveEv()}
+async function endSOS(){if(phase!=='active'||!ev)return;const e=ev;e.t1=Date.now();log('ended by user');
+  clearInterval(tick);tick=null;stopRec();stopLoc();relWake();phase='idle';saveEv();
+  $('#active').hidden=true;renderHome();
+  const n=tgReady();
+  if(n){for(const c of cfg.tg.chats){if(live[c.id])tgCall('stopMessageLiveLocation',{chat_id:c.id,message_id:live[c.id]}).catch(()=>{})}}
+  await new Promise(r=>setTimeout(r,900));
+  let cnt=0;try{cnt=(await idbByEv(e.id)).filter(s=>s.final).length}catch(x){}
+  if(n)tgAll('sendMessage',id=>({chat_id:id,text:'✅ '+(e.mode==='real'?'':'[연습] ')+whoTxt()+' 긴급 종료\n경과 '+mmss(e.t1-e.t0)+' · 녹음 '+cnt+'개'+(e.pos?'\n마지막 위치: '+mapUrl(e.pos):'')}));
+  ev=null;lastPos=null;pump();
+  openModal('끝났습니다','<p>경과 <b>'+mmss(e.t1-e.t0)+'</b> · 녹음 <b>'+cnt+'개</b>가 이 휴대폰에 저장됐습니다.</p><p class="help">'+(n?'부모님께 종료 알림을 보냈습니다. 못 보낸 녹음은 연결되면 이어서 보냅니다.':'부모님 자동 알림이 설정되지 않아 녹음은 이 휴대폰에만 있습니다.')+'</p><button class="btn" id="goHist">기록 보기</button>');
+  const b=$('#goHist');if(b)b.onclick=showHistory}
+
+/* ---------------- 화면 그리기 ---------------- */
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+function renderHome(){const real=cfg.mode==='real';
+  $('#ttl').textContent=cfg.owner.name?cfg.owner.name+' SOS':'SOS 버튼';
+  const p=$('#modePill');p.textContent=real?'실제 모드':'연습 모드';p.className='pill '+(real?'real':'practice');
+  $('#sosSub').textContent=real?'누르면 녹음 · 위치 전송 · '+cfg.number+' 전화':'연습 — '+cfg.number+'에 걸지 않습니다';
+  $('#modeLine').textContent=real?'누르면 '+(cfg.countdown>0?cfg.countdown+'초 뒤 ':'바로 ')+'부모님께 알리고 '+cfg.number+' 전화 화면을 엽니다.':'지금은 연습 모드입니다. 부모님께는 [연습] 표시로 갑니다.';
+  const h=$('#installHint');
+  if(!standalone()){h.hidden=false;h.innerHTML=isIOS?'<b>홈 화면에 설치하세요.</b> 사파리 아래쪽 공유 버튼 → 「홈 화면에 추가」. 설정은 홈 화면의 SOS 아이콘으로 연 화면에서 해야 저장됩니다.':'<b>홈 화면에 설치하면 더 빨리 열립니다.</b> 브라우저 메뉴 → 「홈 화면에 추가」 또는 「앱 설치」.'}else h.hidden=true;
+  const cs=cfg.contacts||[];
+  $('#contacts').innerHTML=cs.length?cs.map(c=>'<a class="ct" href="tel:'+esc(telNum(c.tel))+'"><b>'+esc(c.name)+'</b><em>📞</em><span>'+esc(c.tel)+(c.note?' · '+esc(c.note):'')+'</span></a>').join(''):'<div class="empty">연락처가 없습니다. ⚙ 설정에서 넣거나 「설정 가져오기」로 붙여 넣으세요.</div>';
+  renderChips()}
+let perm={mic:'?',geo:'?'};
+function renderChips(){const c=(k,l,s)=>'<span class="chip '+s+'"><i></i>'+l+'</span>';const m={granted:'ok',denied:'err',prompt:'wait','?':''};
+  $('#chips').innerHTML=c('mic','마이크 '+({granted:'허용됨',denied:'차단됨',prompt:'물어봄'}[perm.mic]||'미확인'),m[perm.mic]||'')+
+    c('geo','위치 '+({granted:'허용됨',denied:'차단됨',prompt:'물어봄'}[perm.geo]||'미확인'),m[perm.geo]||'')+
+    c('tg','부모님 알림 '+(tgReady()?'연결됨('+cfg.tg.chats.length+'명)':'미설정'),tgReady()?'ok':'wait')}
+async function queryPerms(){for(const [k,n] of [['mic','microphone'],['geo','geolocation']]){try{const st=await navigator.permissions.query({name:n});perm[k]=st.state;st.onchange=()=>{perm[k]=st.state;renderChips()}}catch(e){}}renderChips()}
+function renderActive(){if(phase!=='active'||!ev)return;const real=ev.mode==='real';
+  const am=$('#aMode');am.textContent=real?'실제':'연습';am.className='pill '+(real?'real':'practice');
+  const a=$('#aDial'),n=dialTarget();
+  if(real){a.className='call';a.textContent='📞 '+cfg.number+' 전화 걸기';a.setAttribute('href','tel:'+n);$('#aNote').textContent='전화 화면이 안 떴으면 위 버튼을 누르세요. 통화 뒤 이 화면으로 돌아오면 녹음이 이어집니다.'}
+  else{a.className='call practice';a.textContent=n?'연습 번호로 전화 걸기':'연습 — 전화는 걸지 않습니다';a.setAttribute('href',n?'tel:'+n:'#');$('#aNote').textContent='실제 모드에서는 여기에 「'+cfg.number+' 전화 걸기」 버튼이 나오고 전화 화면이 자동으로 열립니다.'}
+  const st=(id,k,txt)=>{const el=$(id);el.className='st '+S[k][0];el.querySelector('span').textContent=txt};
+  const r=S.rec;st('#stRec','rec',r[0]==='on'?'녹음 중 · 저장 '+segInfo.saved+'개'+(tgReady()?' · 전송 '+segInfo.sent+'개':''):(r[1]||'꺼짐')+(segInfo.saved?' · 저장 '+segInfo.saved+'개':''));
+  const l=S.loc;let lt=l[1]||'꺼짐';if(lastPos){const pt=placeText(lastPos),ad=placeAddr(lastPos);lt=lastPos.lat.toFixed(5)+', '+lastPos.lon.toFixed(5)+' (오차 약 '+lastPos.acc+'m)'+(pt?' · '+pt:'')+(ad?' · '+ad:'')}
+  st('#stLoc','loc',lt);st('#stTg','tg',S.tg[1]||'꺼짐');
+  const mp=$('#aMap'),sm=$('#aSms');
+  if(lastPos){mp.setAttribute('href',mapUrl(lastPos));mp.style.opacity=1}else{mp.setAttribute('href','#');mp.style.opacity=.5}
+  const to=telNum((cfg.sms||[])[0]||'');const body=(real?'':'[연습] ')+'SOS '+whoTxt()+(lastPos?' '+mapUrl(lastPos):' (위치 확인 중)');
+  sm.setAttribute('href','sms:'+to+'?&body='+encodeURIComponent(body))}
+
+/* ---------------- 말할 문장 · 내 정보 ---------------- */
+let sayKind='police';
+function scriptHtml(){const o=cfg.owner,p=lastPos,ad=p?placeAddr(p):'',pt=p?placeText(p):'';
+  const need={police:['Police.','경찰이 필요해요'],ambulance:['Ambulance.','구급차가 필요해요'],fire:['Fire.','불이 났어요']}[sayKind];
+  const home=(cfg.places||[])[0],np=p?nearPlace(p):null;
+  const nearTxt=np&&np.pl.addr&&np.d<=800?'I am about '+Math.max(10,Math.round(np.d/10)*10)+' metres from '+np.pl.addr+'.':'';
+  const where=ad?'I am at '+ad+'.':(p?(nearTxt||'I don\'t know the address. My GPS location is '+p.lat.toFixed(5)+', '+p.lon.toFixed(5)+'.'):(home&&home.addr?'My home address is '+home.addr+'.':'I don\'t know the address.'));
+  const L=[[need[0],'「Police, fire or ambulance?」라고 물으면 — '+need[1]],
+    [(cfg.city||'Burnaby')+'.','「For which city?」(어느 도시?)라고 물으면'],
+    [where,'지금 있는 곳'+(pt?' — '+pt:'')],
+    ['Korean interpreter, please. Korean.','한국어 통역을 불러 달라는 말 (1분 안에 연결해 줍니다)'],
+    ['My name is '+(o.name||'_____')+(o.age?'. I am '+o.age+' years old.':'.'),'이름'+(o.age?'과 나이':'')],
+    o.phone?['My phone number is '+o.phone+'.','내 전화번호']:null].filter(Boolean);
+  return '<div class="seg3">'+[['police','경찰'],['ambulance','구급차'],['fire','화재']].map(k=>'<button data-k="'+k[0]+'" aria-pressed="'+(sayKind===k[0])+'">'+k[1]+'</button>').join('')+'</div>'+
+    L.map(x=>'<div class="say"><div class="en">'+esc(x[0])+'</div><div class="ko">'+esc(x[1])+'</div></div>').join('')+
+    '<p class="help">끊으라고 할 때까지 끊지 마세요. 잘못 걸었어도 끊지 말고 「No emergency. I called by mistake.」라고 말하면 됩니다.</p>'}
+function showScript(){openModal('911에 말할 문장',scriptHtml());$('#mBody').querySelectorAll('.seg3 button').forEach(b=>b.onclick=()=>{sayKind=b.dataset.k;showScript()})}
+function showCard(){const o=cfg.owner,home=(cfg.places||[])[0];
+  const rows=[['Name',o.name],['Age',o.age],['Language',o.lang],['Phone',o.phone],['Home (homestay)',home&&home.addr],['Notes',o.note]].filter(r=>r[1]);
+  openModal('내 정보 (보여 주기용)',(rows.length?'<dl class="kv">'+rows.map(r=>'<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>').join('')+'</dl>':'<div class="empty">⚙ 설정에서 이름·나이·메모를 넣으세요.</div>')+
+    '<h2>Emergency contacts</h2><div class="list">'+((cfg.contacts||[]).map(c=>'<a class="ct" href="tel:'+esc(telNum(c.tel))+'"><b>'+esc(c.name)+'</b><em>📞</em><span>'+esc(c.tel)+'</span></a>').join('')||'<div class="empty">없음</div>')+'</div>')}
+
+/* ---------------- 기록 ---------------- */
+async function showHistory(){let evs=[],segs=[];try{evs=(await idbAll('events')).sort((a,b)=>b.t0-a.t0);segs=await idbAll('segs')}catch(e){}
+  const by={};segs.forEach(s=>{(by[s.eventId]=by[s.eventId]||[]).push(s)});
+  const unsent=segs.filter(s=>s.final&&!s.sent&&s.size>0).length;
+  openModal('기록',(unsent&&tgReady()?'<button class="btn" id="hSend">보내지 못한 녹음 '+unsent+'개 다시 보내기</button>':'')+
+    (evs.length?evs.map(e=>{const a=(by[e.id]||[]).sort((x,y)=>x.idx-y.idx);const kb=Math.round(a.reduce((t,s)=>t+(s.size||0),0)/1024);
+      return '<div class="evt" data-id="'+esc(e.id)+'"><b>'+esc(dstr(e.t0))+'</b> <span class="pill '+(e.mode==='real'?'real':'practice')+'">'+(e.mode==='real'?'실제':'연습')+'</span><br><small>'+(e.t1?'경과 '+mmss(e.t1-e.t0):'끝내기 기록 없음')+' · 녹음 '+a.length+'개('+kb+'KB)'+(e.pos?' · <a href="'+esc(mapUrl(e.pos))+'" target="_blank" rel="noopener">마지막 위치</a>':'')+'</small>'+
+        '<div class="row2"><button class="btn small" data-act="play">녹음 듣기</button><button class="btn small" data-act="del">지우기</button></div><div class="au"></div></div>'}).join(''):'<div class="empty">아직 기록이 없습니다.</div>'));
+  const hs=$('#hSend');if(hs)hs.onclick=()=>{toast('다시 보내는 중');pump().then(showHistory)};
+  $('#mBody').querySelectorAll('.evt').forEach(d=>{const id=d.dataset.id;
+    d.querySelector('[data-act=play]').onclick=()=>{const a=(by[id]||[]).sort((x,y)=>x.idx-y.idx);const box=d.querySelector('.au');
+      box.innerHTML=a.length?'':'<small>녹음이 없습니다.</small>';
+      a.forEach(s=>{const u=URL.createObjectURL(s.blob);urls.push(u);const w=document.createElement('div');
+        w.innerHTML='<small>'+s.idx+'번 · '+clock(s.t0)+' · '+Math.round(s.dur/1000)+'초'+(s.sent?' · 전송됨':'')+'</small><audio controls preload="none" src="'+u+'"></audio>';box.appendChild(w)})};
+    d.querySelector('[data-act=del]').onclick=async()=>{if(!confirm('이 기록과 녹음을 이 휴대폰에서 지울까요?'))return;await delEvent(id);showHistory()}})}
+
+/* ---------------- 준비 점검 ---------------- */
+async function prep(){openModal('준비 점검','<div id="pOut" class="list"><div class="empty">확인하는 중… 허용을 묻는 창이 뜨면 「허용」을 누르세요.</div></div>');
+  const out=[];const add=(ok,t,h)=>{out.push('<div class="st '+(ok===true?'on':ok===false?'err':'wait')+'" style="grid-template-columns:12px 1fr"><i></i><span><b>'+esc(t)+'</b>'+(h?'<br><small style="color:var(--mute)">'+esc(h)+'</small>':'')+'</span></div>');const el=$('#pOut');if(el)el.innerHTML=out.join('')};
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});st.getTracks().forEach(t=>t.stop());add(true,'마이크 허용됨',window.MediaRecorder?'녹음 형식: '+(pickMime()||'기본'):'이 브라우저는 녹음 기능이 없습니다')}
+  catch(e){add(false,'마이크를 쓸 수 없습니다','휴대폰 설정에서 이 앱(사파리)의 마이크를 「허용」으로 바꾸세요.')}
+  await new Promise(res=>{if(!navigator.geolocation){add(false,'위치 기능이 없습니다');res();return}
+    navigator.geolocation.getCurrentPosition(p=>{const q={lat:p.coords.latitude,lon:p.coords.longitude};add(true,'위치 허용됨','오차 약 '+Math.round(p.coords.accuracy)+'m'+(placeText(q)?' · '+placeText(q):''));res()},
+      e=>{add(false,'위치를 쓸 수 없습니다',e&&e.code===1?'휴대폰 설정에서 위치를 「허용」으로 바꾸세요.':'잠시 뒤 다시 해 보세요.');res()},{enableHighAccuracy:true,timeout:15000,maximumAge:0})});
+  if(cfg.tg.token){try{const me=await tgCall('getMe',{});add(cfg.tg.chats.length>0?true:null,'텔레그램 봇 연결됨: '+(me.username?'@'+me.username:me.first_name),cfg.tg.chats.length?'받는 사람 '+cfg.tg.chats.length+'명':'받는 사람을 아직 고르지 않았습니다 (⚙ 설정)')}
+    catch(e){add(false,'텔레그램 봇에 연결하지 못했습니다','토큰과 인터넷 연결을 확인하세요.')}}
+  else add(null,'부모님 자동 알림(텔레그램)이 설정되지 않았습니다','없어도 녹음·위치 표시·전화는 됩니다.');
+  add(standalone()?true:null,standalone()?'홈 화면 앱으로 실행 중':'브라우저에서 실행 중','홈 화면에 추가한 아이콘으로 열어야 설정이 그 앱에 저장됩니다.');
+  queryPerms()}
+
+/* ---------------- 설정 ---------------- */
+const ctLines=()=>(cfg.contacts||[]).map(c=>[c.name,c.tel,c.note||''].join(' | ')).join('\n');
+const plLines=()=>(cfg.places||[]).map(p=>[p.name,p.addr||'',(p.lat+','+p.lon),(p.r||150)].join(' | ')).join('\n');
+function showSettings(){const o=cfg.owner;
+  openModal('설정',
+   '<label>모드</label><select id="sMode"><option value="practice">연습 모드 — 전화를 걸지 않음</option><option value="real">실제 모드 — 긴급 전화 화면을 엶</option></select>'+
+   '<div class="help">한국에 있는 동안은 연습 모드로 두세요. 실제 모드는 캐나다에 도착한 뒤 켭니다.</div>'+
+   '<div class="row2"><div><label>긴급 번호</label><input type="tel" id="sNum" value="'+esc(cfg.number)+'"></div><div><label>누른 뒤 기다리는 초(0~10)</label><input type="number" id="sCd" min="0" max="10" value="'+esc(cfg.countdown)+'"></div></div>'+
+   '<label>연습 때 걸어 볼 번호 (비워 두면 전화 화면을 열지 않음)</label><input type="tel" id="sPd" value="'+esc(cfg.practiceDial)+'" placeholder="예: 부모님 번호">'+
+   '<div class="sec"><h3>내 정보</h3><div class="row2"><div><label>이름(영문)</label><input type="text" id="oName" value="'+esc(o.name)+'"></div><div><label>나이</label><input type="text" id="oAge" value="'+esc(o.age)+'"></div></div>'+
+   '<div class="row2"><div><label>내 전화번호</label><input type="tel" id="oPhone" value="'+esc(o.phone)+'"></div><div><label>도시(영문)</label><input type="text" id="sCity" value="'+esc(cfg.city)+'" placeholder="Burnaby"></div></div>'+
+   '<label>메모(알레르기 등, 영문)</label><input type="text" id="oNote" value="'+esc(o.note)+'"></div>'+
+   '<div class="sec"><h3>부모님 자동 알림 (텔레그램)</h3><div class="help">전용 봇을 하나 만들어 토큰을 여기에 붙여 넣습니다. 토큰은 이 휴대폰에만 저장됩니다.</div>'+
+   '<label>봇 토큰</label><input type="password" id="tTok" value="'+esc(cfg.tg.token)+'" autocomplete="off" autocapitalize="off" spellcheck="false">'+
+   '<div id="tChats" class="list" style="margin-top:8px"></div>'+
+   '<div class="row2"><button class="btn small" id="tFind">받는 사람 찾기</button><button class="btn small" id="tTest">시험 메시지 보내기</button></div>'+
+   '<div class="help">부모님이 텔레그램에서 그 봇을 열고 「시작」을 누른 뒤 「받는 사람 찾기」를 누르세요.</div></div>'+
+   '<div class="sec"><h3>연락처</h3><div class="help">한 줄에 하나: 이름 | 전화 | 메모</div><textarea id="sCt">'+esc(ctLines())+'</textarea>'+
+   '<label>문자로 위치를 보낼 번호 (쉼표로 구분, 첫 번호로 보냄)</label><input type="text" id="sSms" value="'+esc((cfg.sms||[]).join(', '))+'"></div>'+
+   '<div class="sec"><h3>자주 있는 곳</h3><div class="help">한 줄에 하나: 이름 | 주소(영문) | 위도,경도 | 반경m — 그 근처에 있으면 주소를 대신 보여 줍니다.</div><textarea id="sPl">'+esc(plLines())+'</textarea>'+
+   '<button class="btn small" id="sHere" style="margin-top:8px">지금 있는 곳을 추가</button></div>'+
+   '<div class="sec"><h3>설정 가져오기 · 내보내기</h3><div class="help">받은 설정 글을 아래에 붙여 넣고 「가져오기」를 누르세요. 내보내기에는 봇 토큰이 들어가지 않습니다.</div><textarea id="sIo" placeholder="{ ... }"></textarea>'+
+   '<div class="row2"><button class="btn small" id="sImp">가져오기</button><button class="btn small" id="sExp">내보내기</button></div></div>'+
+   '<div class="sec"><button class="btn primary" id="sSave">저장</button></div>');
+  $('#sMode').value=cfg.mode;renderChats();
+  const read=()=>{cfg.number=telNum($('#sNum').value)||'911';cfg.countdown=Math.max(0,Math.min(10,Math.round(+$('#sCd').value||0)));cfg.practiceDial=telNum($('#sPd').value);
+    cfg.owner.name=$('#oName').value.trim();cfg.owner.age=$('#oAge').value.trim();cfg.owner.phone=$('#oPhone').value.trim();cfg.owner.note=$('#oNote').value.trim();cfg.city=$('#sCity').value.trim();
+    cfg.tg.token=$('#tTok').value.trim();
+    cfg.contacts=$('#sCt').value.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]&&a[1]).map(a=>({name:a[0],tel:a[1],note:a[2]||''}));
+    cfg.sms=$('#sSms').value.split(',').map(x=>x.trim()).filter(Boolean);
+    cfg.places=$('#sPl').value.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]&&a[2]).map(a=>{const ll=a[2].split(',').map(Number);return {name:a[0],addr:a[1]||'',lat:ll[0],lon:ll[1],r:+a[3]||150}}).filter(p=>isFinite(p.lat)&&isFinite(p.lon))};
+  $('#sMode').onchange=e=>{if(e.target.value==='real'){if(!confirm('실제 모드로 바꾸면 SOS 버튼이 진짜 '+(telNum($('#sNum').value)||'911')+' 전화 화면을 엽니다.\n한국에서는 켜지 마세요. 바꿀까요?')){e.target.value='practice';return}}cfg.mode=e.target.value;saveCfg();renderHome()};
+  $('#sSave').onclick=()=>{read();saveCfg();renderHome();closeModal();toast('저장했습니다')};
+  $('#tFind').onclick=async()=>{read();saveCfg();if(!cfg.tg.token){toast('먼저 봇 토큰을 넣으세요');return}
+    try{const ups=await tgCall('getUpdates',{timeout:0});const m=new Map();
+      for(const u of ups){const c=(u.message||u.edited_message||u.channel_post||u.my_chat_member||{}).chat;if(c)m.set(String(c.id),{id:String(c.id),name:c.title||[c.first_name,c.last_name].filter(Boolean).join(' ')||c.username||String(c.id)})}
+      if(!m.size){toast('아직 봇에게 말을 건 사람이 없습니다. 부모님이 봇에서 「시작」을 눌러야 합니다.',4500);return}
+      for(const c of m.values()){if(!cfg.tg.chats.some(x=>String(x.id)===c.id))cfg.tg.chats.push(c)}
+      saveCfg();renderChats();renderHome();toast('받는 사람 '+cfg.tg.chats.length+'명')}
+    catch(e){toast('찾지 못했습니다: '+e.message,4500)}};
+  $('#tTest').onclick=async()=>{read();saveCfg();if(!tgReady()){toast('토큰과 받는 사람이 필요합니다');return}
+    const rs=await tgAll('sendMessage',id=>({chat_id:id,text:'[시험] '+whoTxt()+' SOS 앱 연결 확인 · '+dstr(Date.now())}));const ok=rs.filter(r=>!r.err).length;
+    toast(ok?'시험 메시지를 '+ok+'명에게 보냈습니다':'보내지 못했습니다: '+((rs[0]&&rs[0].err&&rs[0].err.message)||''),4000)};
+  $('#sHere').onclick=()=>{const name=prompt('이곳 이름 (예: 학교, 학원)');if(!name)return;const addr=prompt('주소(영문, 911에 말할 주소). 모르면 비워 두세요.')||'';
+    navigator.geolocation.getCurrentPosition(p=>{const ta=$('#sPl');ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+[name,addr,p.coords.latitude.toFixed(6)+','+p.coords.longitude.toFixed(6),150].join(' | ');toast('추가했습니다. 「저장」을 누르세요.')},
+      ()=>toast('위치를 가져오지 못했습니다'),{enableHighAccuracy:true,timeout:15000})};
+  $('#sImp').onclick=()=>{try{importCfg($('#sIo').value);renderHome();showSettings();toast('가져왔습니다')}catch(e){toast('가져오지 못했습니다: '+e.message,4000)}};
+  $('#sExp').onclick=()=>{read();$('#sIo').value=exportCfg();toast('아래 글을 복사해 두세요')}}
+function renderChats(){const el=$('#tChats');if(!el)return;
+  el.innerHTML=(cfg.tg.chats||[]).length?cfg.tg.chats.map((c,i)=>'<div class="ct"><b>'+esc(c.name||c.id)+'</b><em><button class="btn small" data-i="'+i+'">빼기</button></em><span>받는 사람</span></div>').join(''):'<div class="empty">받는 사람이 없습니다.</div>';
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{cfg.tg.chats.splice(+b.dataset.i,1);saveCfg();renderChats();renderHome()})}
+
+/* ---------------- 이벤트 연결 ---------------- */
+$('#sos').onclick=onSosTap;$('#cCancel').onclick=cancelCount;
+$('#btnSet').onclick=showSettings;$('#modePill').onclick=showSettings;$('#btnPrep').onclick=prep;
+$('#btnScript').onclick=showScript;$('#aScript').onclick=showScript;$('#btnCard').onclick=showCard;$('#btnHist').onclick=showHistory;
+$('#mClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});
+$('#aDial').addEventListener('click',e=>{if(!dialTarget()){e.preventDefault();toast('연습 모드입니다. 전화는 걸지 않습니다.')}else log('dial button tapped')});
+$('#aMap').addEventListener('click',e=>{if(!lastPos){e.preventDefault();toast('위치를 아직 못 잡았습니다')}});
+const endBtn=$('#aEnd');
+const holdStart=e=>{e.preventDefault();if(holdT)return;endBtn.classList.add('hold');holdT=setTimeout(()=>{holdT=null;endBtn.classList.remove('hold');endSOS()},1500)};
+const holdEnd=()=>{if(holdT){clearTimeout(holdT);holdT=null}endBtn.classList.remove('hold')};
+endBtn.addEventListener('pointerdown',holdStart);['pointerup','pointerleave','pointercancel'].forEach(n=>endBtn.addEventListener(n,holdEnd));
+endBtn.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
+  if(phase==='active'){if(!streamLive()||!rec||rec.state==='inactive')reviveRec('back to app');reqWake();pump();
+    try{navigator.geolocation.getCurrentPosition(onPos,()=>{},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}catch(e){}}
+  else if(phase==='idle')queryPerms()});
+window.addEventListener('beforeunload',e=>{if(phase==='active'){e.preventDefault();e.returnValue=''}});
+window.addEventListener('online',()=>{pump()});
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+
+/* 시험·점검용 */
+SOS.state=()=>({phase,mode:cfg.mode,rec:S.rec.slice(),loc:S.loc.slice(),tg:S.tg.slice(),segInfo:Object.assign({},segInfo),pos:lastPos,ev:ev?{id:ev.id,mode:ev.mode,alertOk:ev.alertOk,log:ev.log.slice()}:null});
+SOS.importConfig=importCfg;SOS.exportConfig=exportCfg;SOS.end=endSOS;SOS.refresh=()=>{cfg=loadCfg();renderHome()};
+window.SOS=SOS;
+renderHome();queryPerms();pump();
+})();
+</script>
+</body>
+</html>
